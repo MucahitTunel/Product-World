@@ -18,7 +18,7 @@ const CustomHeader = ({
     backButtonAction,
     headerRightComponent
 }: Props) => {
-    const { theme } = useTheme()
+    const { colorScheme } = useTheme()
     const router = useRouter();
 
     const handleBackPress = () => {
@@ -36,7 +36,7 @@ const CustomHeader = ({
                     <Ionicons
                         name='arrow-back'
                         size={24}
-                        color={theme === 'dark' ? '#fff' : '#000'}
+                        color={colorScheme === 'dark' ? '#fff' : '#000'}
                     />
                 </Pressable>
             )}

@@ -1,5 +1,6 @@
 import BaseView from '@/components/BaseView'
 import ProductCategoryList from '@/components/product/ProductCategoryList'
+import ToggleTheme from '@/components/ToggleTheme'
 import { useFetchProductsQuery } from '@/services/api/productApi'
 import { Product } from '@/types/product'
 import { FlashList } from '@shopify/flash-list'
@@ -44,6 +45,8 @@ const Products = () => {
 
   return (
     <BaseView>
+      <ToggleTheme />
+
       <FlashList
         showsVerticalScrollIndicator={false}
         data={groupByCategoryProducts}

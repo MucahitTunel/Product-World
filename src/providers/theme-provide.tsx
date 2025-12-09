@@ -1,63 +1,101 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { createContext, useEffect, useMemo, useState } from "react"
-import { useColorScheme } from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useColorScheme as useNativeWindColorScheme } from "nativewind";
+import { createContext, useEffect, useMemo, useState } from "react";
+import { useColorScheme as useSystemColorScheme } from "react-native";
 
-type Theme = 'light' | 'dark'
+export type Theme = "light" | "dark" | "system";
 
 interface ThemeContextValue {
-    theme: Theme
-    toggleTheme: () => void
-    setTheme: (theme: Theme) => void
-    ready: boolean
+  theme: Theme;
+  colorScheme: "light" | "dark";
+  setTheme: (theme: Theme) => void;
+  ready: boolean;
 }
 
-export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
-const STORAGE_KEY = 'app-theme-preference'
+export const ThemeContext = createContext<ThemeContextValue | undefined>(
+  undefined
+);
+
+const STORAGE_KEY = "app-theme-preference";
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const system = useColorScheme()
-    const [theme, setTheme] = useState<Theme>(system === 'dark' ? 'dark' : 'light')
-    const [ready, setReady] = useState(true)
+  const system = useSystemColorScheme(); // 'light' | 'dark' | null
+  const { setColorScheme: setNativeWindColorScheme } = useNativeWindColorScheme();
 
-    useEffect(() => {
-        const getStoredTheme = async () => {
-            try {
-                const storedTheme = await AsyncStorage.getItem(STORAGE_KEY)
+  // theme: kullanıcı tercihi
+  const [theme, setThemeState] = useState<Theme>("system");
+  const [ready, setReady] = useState(false);
 
-                if (storedTheme) {
-                    setTheme(storedTheme as Theme)
-                }
-            } catch (error) {
-                console.error("Failed to load theme:", error)
-            } finally {
-                setReady(true)
-            }
+  // İlk açılışta AsyncStorage'dan theme tercihinin okunması
+  useEffect(() => {
+    const getStoredTheme = async () => {
+      try {
+        const storedTheme = await AsyncStorage.getItem(STORAGE_KEY);
+
+        if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
+          setThemeState(storedTheme);
+        } else {
+          // Kayıt yoksa default olarak 'system' kullan
+          setThemeState("system");
         }
+      } catch (error) {
+        console.error("Failed to load theme:", error);
+      } finally {
+        setReady(true);
+      }
+    };
 
-        getStoredTheme()
-    }, [system])
+    getStoredTheme();
+  }, []);
 
-    useEffect(() => {
-        if (ready) AsyncStorage.setItem(STORAGE_KEY, theme).catch(error => {
-            console.error("Failed to save theme:", error)
-        })
-    }, [theme, ready])
+  // theme değiştiğinde tercihi AsyncStorage'a yaz
+  useEffect(() => {
+    if (!ready) return;
 
-    const toggleTheme = () => {
-        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light')
+    AsyncStorage.setItem(STORAGE_KEY, theme).catch((error) => {
+      console.error("Failed to save theme:", error);
+    });
+  }, [theme, ready]);
+
+  // Ekranda kullanılacak efektif tema
+  const colorScheme = useMemo<"light" | "dark">(() => {
+    if (theme === "system") {
+      // system null olursa light’a düş
+      return system === "dark" ? "dark" : "light";
+    }
+    return theme;
+  }, [theme, system]);
+
+  useEffect(() => {
+    if (!setNativeWindColorScheme) {
+      return;
     }
 
-    const value = useMemo(() => ({
-        theme,
-        ready,
-        toggleTheme,
-        setTheme
-    }), [theme, ready])
+    if (theme === "system") {
+      setNativeWindColorScheme("system");
+      return;
+    }
 
-    return (
-        <ThemeContext.Provider value={value}>
-            {children}
-        </ThemeContext.Provider>
-    )
-}
+    setNativeWindColorScheme(colorScheme);
+  }, [colorScheme, theme, setNativeWindColorScheme]);
 
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+  };
+
+  const value = useMemo(
+    () => ({
+      theme,
+      colorScheme,
+      ready,
+      setTheme,
+    }),
+    [theme, colorScheme, ready]
+  );
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
