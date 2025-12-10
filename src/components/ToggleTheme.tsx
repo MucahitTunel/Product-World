@@ -8,7 +8,7 @@ type Props = {}
 
 const ToggleTheme = (props: Props) => {
 
-  const { colorScheme, setTheme, theme } = useTheme()
+  const { setTheme, theme } = useTheme()
 
   const activeThemeButtonStyle = 'border-2 bg-gray-300 dark:bg-gray-700 border-blue-500'
 
