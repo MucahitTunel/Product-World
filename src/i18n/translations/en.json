@@ -1,0 +1,11 @@
+{
+    "common": {
+        "pageNotFound": "Page Not Found",
+        "goBackHome": "Go Back Home",
+        "loading": "Loading..."
+    },
+    "product": {
+        "headerTitle": "Products",
+        "headerDetailTitle": "Product Details"
+    }
+}

@@ -5,7 +5,7 @@ import { useFetchProductsQuery } from '@/services/api/productApi'
 import { Product } from '@/types/product'
 import { FlashList } from '@shopify/flash-list'
 import { useNavigation, useRouter } from 'expo-router'
-import React, { useCallback, useLayoutEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { StyleSheet, Text } from 'react-native'
 
 const Products = () => {
@@ -13,12 +13,6 @@ const Products = () => {
   const navigation = useNavigation()
 
   const { data, error, isLoading } = useFetchProductsQuery()
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: "Products",
-    })
-  }, [navigation])
 
   const groupByCategoryProducts = useMemo(() => {
     if (!data) return []
